@@ -2,7 +2,8 @@
 
 > Full reinstall guide for **andrefenti** (email: andrefenti2@gmail.com).
 > If you lose access to your computer and have only Claude Code, follow this guide top to bottom.
-> **Last updated: 2026-05-12**
+> **Last updated: 2026-05-12**  
+**Last modified: Added Graphify + Obsidian 3D Graph (Section 14)**
 
 ---
 
@@ -498,6 +499,96 @@ Please:
 4. Confirm what you know about Helvora and the Awawa Bridge
 
 My email is andrefenti2@gmail.com and my GitHub is andrefenti.
+```
+
+---
+
+## 14. Set Up Graphify (Token-Saving Knowledge Graph)
+
+Graphify reads your files once, builds a persistent knowledge graph, and lets Claude query your entire project in natural language without re-reading files every session. Reported reduction: **71.5x fewer tokens** vs raw file reads.
+
+GitHub: https://github.com/safishamsi/graphify
+
+### Install
+
+```bash
+pip install graphifyy && graphify install
+```
+
+This installs the package and registers it as a Claude Code skill at `~/.claude/skills/graphify/SKILL.md`. It also auto-creates `~/.claude/CLAUDE.md` with the skill registration.
+
+### Add Context Navigation to CLAUDE.md
+
+Add this section to `~/.claude/CLAUDE.md` (after the graphify line):
+
+```markdown
+## Navegação de Contexto
+Quando precisar entender o código, documentos ou quaisquer arquivos deste projeto:
+1. SEMPRE consulte o grafo de conhecimento primeiro: `/graphify query "sua pergunta"`
+2. Só leia arquivos brutos se eu disser explicitamente "leia o arquivo" ou "veja o arquivo bruto"
+3. Use `graphify-out/wiki/index.md` como ponto de entrada para navegar pela estrutura
+```
+
+### Build the Knowledge Graph
+
+In a new Claude Code session (so the skill is loaded), run:
+
+```
+/graphify ~/.claude
+```
+
+This scans all config files — CLAUDE.md, skills, memory files — and builds a persistent graph in `~/.claude/graphify-out/`. First run takes a few minutes; after that it's incremental.
+
+For a project codebase:
+```
+/graphify C:\Users\<USERNAME>\Helvora
+```
+
+### Install wiki-brain (automates the full setup)
+
+```bash
+git clone https://github.com/tenfoldmarc/wiki-brain-skill ~/.claude/skills/wiki-brain
+```
+
+Then in Claude Code: `/wiki-brain` — it handles install, vault setup, CLAUDE.md update, and adds a SessionEnd hook to rebuild the graph when files change. Also adds `/recall` to show your last 5 activities.
+
+### Obsidian 3D Graph Visualization (Optional)
+
+Visualize your knowledge graph as a rotating 3D galaxy.
+
+1. Download Obsidian from https://obsidian.md
+2. Open `~/.claude/graphify-out/obsidian/` as a vault (or run `/graphify ~/.claude --obsidian` to generate it)
+3. Install the 3D Graph plugin:
+   - Settings → Community Plugins → Disable Safe Mode
+   - Search for **BRAT** → install and enable
+   - Command palette (Ctrl+P) → "BRAT: Add a beta plugin" → paste the Aryan Gupta 3D Graph repo (v2.4.1)
+   - Enable the plugin in Community Plugins
+   - Command palette → "3D Graph: Open 3D Graph View"
+
+4. Recommended settings:
+   - Node base size: 6–8
+   - Enable "Scale by connections"
+   - Color groups:
+     - Group 0 (Core): `#3B82F6` (electric blue)
+     - Group 1 (Logic): `#10B981` (emerald green)
+     - Group 2 (Data): `#F59E0B` (amber)
+     - Group 3 (Config): `#EC4899` (pink)
+     - Group 4 (Docs): `#8B5CF6` (purple)
+     - Group 5+: cycle `#06B6D4`, `#EF4444`, `#84CC16`
+   - Link opacity: 0.15–0.2, thickness: 1–2
+   - Enable bloom/glow, dark background, increase repulsion force
+
+### Bootstrap step for new machines
+
+After Graphify install is done, run in Claude Code:
+
+```
+/graphify ~/.claude
+```
+
+Then optionally:
+```
+/graphify C:\Users\<USERNAME>\Helvora --obsidian
 ```
 
 ---
